@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>联想摇奖程序</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        .lottery-container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 2rem;
+        }
+        .prize-display {
+            width: 300px;
+            height: 150px;
+            border: 3px solid #1a73e8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        .prize-list {
+            margin: 1rem 0;
+            text-align: left;
+            width: 300px;
+        }
+        .prize-list p {
+            margin: 0.5rem 0;
+            color: #555;
+        }
+        #lottery-btn {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        #lottery-btn:hover {
+            background-color: #0d5bcd;
+        }
+        #lottery-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="lottery-container">
+        <h1>联想幸运摇奖</h1>
+        
+        <div class="prize-list">
+            <p><strong>一等奖</strong>：拯救者m5000山地自行车</p >
+            <p><strong>二等奖</strong>：联想care5年智惠服务</p >
+            <p><strong>三等奖</strong>：联想316不锈钢保温杯</p >
+            <p><strong>幸运奖</strong>：联想雨伞 / 联想手提袋（随机）</p >
+        </div>
+
+        <div class="prize-display" id="result">点击下方按钮开始摇奖</div>
+        
+        <button id="lottery-btn">开始摇奖</button>
+    </div>
+
+    <script>
+        // 定义奖品池（设置概率，一等奖概率最低，幸运奖最高）
+        const prizes = [
+            { name: "拯救者m5000山地自行车", level: "一等奖", probability: 1 },    // 1%概率
+            { name: "联想care5年智惠服务", level: "二等奖", probability: 3 },     // 3%概率
+            { name: "联想316不锈钢保温杯", level: "三等奖", probability: 6 },     // 6%概率
+            { name: "联想雨伞", level: "幸运奖", probability: 45 },               // 45%概率
+            { name: "联想手提袋", level: "幸运奖", probability: 45 }              // 45%概率
+        ];
+
+        const btn = document.getElementById("lottery-btn");
+        const resultBox = document.getElementById("result");
+        let isRolling = false;
+
+        // 计算总概率，用于随机抽取
+        const totalProb = prizes.reduce((sum, prize) => sum + prize.probability, 0);
+
+        btn.addEventListener("click", () => {
+            if (isRolling) return;
+
+            // 开始滚动动画
+            isRolling = true;
+            btn.disabled = true;
+            btn.textContent = "摇奖中...";
+            resultBox.textContent = "正在抽取奖品...";
+
+            // 滚动效果（随机切换显示，持续2秒）
+            const rollInterval = setInterval(() => {
+                const randomIdx = Math.floor(Math.random() * prizes.length);
+                resultBox.textContent = `恭喜获得：${prizes[randomIdx].name}`;
+            }, 100);
+
+            // 2秒后停止滚动，确定最终奖品
+            setTimeout(() => {
+                clearInterval(rollInterval);
+                const finalPrize = getRandomPrize();
+                resultBox.innerHTML = `<span style="color:#1a73e8">恭喜获得【${finalPrize.level}】</span><br>${finalPrize.name}`;
+                
+                // 恢复按钮状态
+                isRolling = false;
+                btn.disabled = false;
+                btn.textContent = "再次摇奖";
+            }, 2000);
+        });
+
+        // 根据概率抽取最终奖品
+        function getRandomPrize() {
+            let randomNum = Math.floor(Math.random() * totalProb) + 1;
+            let currentSum = 0;
+
+            for (const prize of prizes) {
+                currentSum += prize.probability;
+                if (randomNum <= currentSum) {
+                    return prize;
+                }
+            }
+            // 兜底返回幸运奖（理论上不会触发）
+            return prizes[3];
+        }
+    </script>
+</body>
+</html>
